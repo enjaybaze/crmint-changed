@@ -63,6 +63,13 @@ class TestPipelineViews(controller_utils.ControllerAppTest):
     response = self.client.get('/api/pipelines/1/export')
     self.assertEqual(response.status_code, 200)
 
+  def test_export_pipeline_content_type(self):
+    pipeline = models.Pipeline.create(name='My Pipeline')
+    models.Job.create(pipeline_id=pipeline.id)
+    response = self.client.get(f'/api/pipelines/{pipeline.id}/export')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.headers.get('Content-Type'), 'application/json')
+
   def test_enable_run_on_schedule(self):
     pipeline = models.Pipeline.create()
     response = self.client.patch(
