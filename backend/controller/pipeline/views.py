@@ -22,12 +22,14 @@ import time
 import uuid
 
 import flask
+from flask import make_response, json # Added make_response and json
 from flask_restful import abort
 from flask_restful import Api
 from flask_restful import fields
 from flask_restful import marshal_with
 from flask_restful import reqparse
 from flask_restful import Resource
+from flask_restful import marshal # Added marshal
 from google.cloud import logging
 import jinja2
 from sqlalchemy import orm
@@ -101,11 +103,16 @@ def abort_if_pipeline_doesnt_exist(pipeline, pipeline_id):
 class PipelineSingle(Resource):
   """Shows a single pipeline item and lets you delete a pipeline item."""
 
-  @marshal_with(pipeline_fields)
+  # REMOVED: @marshal_with(pipeline_fields)
   def get(self, pipeline_id):
     pipeline = models.Pipeline.find(pipeline_id)
     abort_if_pipeline_doesnt_exist(pipeline, pipeline_id)
-    return pipeline
+
+    marshalled_data = marshal(pipeline, pipeline_fields) # Use the existing pipeline_fields
+
+    response = make_response(json.dumps(marshalled_data))
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
   @marshal_with(pipeline_fields)
   def delete(self, pipeline_id):
